@@ -90,12 +90,6 @@ export function execute(
 
     debug(`Executing: ${invocation.cmd} ${invocation.args.join(' ')}`);
 
-    const child = spawn(invocation.cmd, invocation.args, {
-      cwd: invocation.cwd,
-      env: buildSafeEnv(invocation.env),
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-
     const isWin = process.platform === "win32";
     const child = isWin
       ? spawn(
