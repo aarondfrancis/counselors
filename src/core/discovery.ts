@@ -158,6 +158,7 @@ export function getBinaryVersion(binaryPath: string): string | null {
       timeout: VERSION_TIMEOUT,
       stdio: ['pipe', 'pipe', 'pipe'],
       encoding: 'utf-8',
+      shell: process.platform === "win32",
     }).trim();
     // Take first line, strip common prefixes
     const firstLine = output.split('\n')[0].trim();
