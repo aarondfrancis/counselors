@@ -96,6 +96,23 @@ export function execute(
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    const isWin = process.platform === "win32";
+    const child = isWin
+      ? spawn(
+          [invocation.cmd, ...invocation.args.map((a) => (a.includes(" ") ? `"${a}"` : a))].join(" "),
+          {
+            cwd: invocation.cwd,
+            env: buildSafeEnv(invocation.env),
+            stdio: ["pipe", "pipe", "pipe"],
+            shell: true,
+          },
+        )
+      : spawn(invocation.cmd, invocation.args, {
+          cwd: invocation.cwd,
+          env: buildSafeEnv(invocation.env),
+          stdio: ["pipe", "pipe", "pipe"],
+        });
+
     // Track active children for SIGINT cleanup
     activeChildren.add(child);
 
@@ -172,6 +189,7 @@ export async function captureAmpUsage(): Promise<string | null> {
     const { stdout } = await execFileAsync('amp', ['usage'], {
       timeout: 10_000,
       encoding: 'utf-8',
+      shell: process.platform === "win32",
     });
     return stdout;
   } catch {
