@@ -376,7 +376,7 @@ Codex also found 2 bugs all agents acknowledged: dedup by name drops valid sugge
 
 ## Security
 
-- **Environment allowlisting**: Child processes only receive allowlisted environment variables (PATH, HOME, API keys, proxy settings, etc.) — no full `process.env` leak.
+- **Environment allowlisting**: Child processes only receive allowlisted environment variables (PATH, HOME, API keys, GH_TOKEN, proxy settings, etc.) — no full `process.env` leak.
 - **Atomic config writes**: Config files are written atomically via temp+rename with `0o600` permissions.
 - **Tool name validation**: Tool IDs are validated against `[a-zA-Z0-9._-]` to prevent path traversal.
 - **No shell execution**: All child processes use `execFile`/`spawn` without `shell: true`.

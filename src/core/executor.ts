@@ -100,6 +100,9 @@ const ENV_ALLOWLIST = [
   'GOOGLE_CLOUD_PROJECT',
   'GOOGLE_CLOUD_LOCATION',
   'AMP_API_KEY',
+  // GitHub CLI auth
+  'GH_TOKEN',
+  'GITHUB_TOKEN',
   // Proxy
   'HTTP_PROXY',
   'HTTPS_PROXY',

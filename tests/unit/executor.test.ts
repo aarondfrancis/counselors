@@ -365,6 +365,29 @@ describe('execute', () => {
     }
   });
 
+  it('passes GH_TOKEN and GITHUB_TOKEN through to child processes', async () => {
+    process.env.GH_TOKEN = 'test-gh-token';
+    process.env.GITHUB_TOKEN = 'test-github-token';
+    try {
+      const result = await execute(
+        {
+          cmd: 'node',
+          args: [
+            '-e',
+            'process.stdout.write([process.env.GH_TOKEN, process.env.GITHUB_TOKEN].join(","))',
+          ],
+          cwd: process.cwd(),
+        },
+        5000,
+      );
+
+      expect(result.stdout).toBe('test-gh-token,test-github-token');
+    } finally {
+      delete process.env.GH_TOKEN;
+      delete process.env.GITHUB_TOKEN;
+    }
+  });
+
   it('blocks NODE_OPTIONS from reaching child processes', async () => {
     process.env.NODE_OPTIONS = '--max-old-space-size=4096';
     try {
