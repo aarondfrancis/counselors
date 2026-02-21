@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { CursorAdapter } from '../../../src/adapters/cursor.js';
+import { CursorAgentAdapter } from '../../../src/adapters/cursor-agent.js';
 import type { RunRequest } from '../../../src/types.js';
 
-describe('CursorAdapter', () => {
-  const adapter = new CursorAdapter();
+describe('CursorAgentAdapter', () => {
+  const adapter = new CursorAgentAdapter();
 
   const baseRequest: RunRequest = {
     prompt: 'test prompt',
@@ -17,15 +17,15 @@ describe('CursorAdapter', () => {
   };
 
   it('has correct metadata', () => {
-    expect(adapter.id).toBe('cursor');
-    expect(adapter.commands).toEqual(['agent']);
+    expect(adapter.id).toBe('cursor-agent');
+    expect(adapter.commands).toEqual(['cursor-agent']);
     expect(adapter.readOnly.level).toBe('enforced');
     expect(adapter.modelFlag).toBe('--model');
   });
 
   it('builds invocation with read-only flags', () => {
     const inv = adapter.buildInvocation(baseRequest);
-    expect(inv.cmd).toBe('agent');
+    expect(inv.cmd).toBe('cursor-agent');
     expect(inv.args).toContain('-p');
     expect(inv.args).toContain('--model');
     expect(inv.args).toContain('composer-1.5');
@@ -64,13 +64,13 @@ describe('CursorAdapter', () => {
   });
 
   it('uses req.binary when provided', () => {
-    const req = { ...baseRequest, binary: '/home/user/.local/bin/agent' };
+    const req = { ...baseRequest, binary: '~/.local/bin/cursor-agent' };
     const inv = adapter.buildInvocation(req);
-    expect(inv.cmd).toBe('/home/user/.local/bin/agent');
+    expect(inv.cmd).toBe('~/.local/bin/cursor-agent');
   });
 
-  it('falls back to "agent" when req.binary is undefined', () => {
+  it('falls back to "cursor-agent" when req.binary is undefined', () => {
     const inv = adapter.buildInvocation(baseRequest);
-    expect(inv.cmd).toBe('agent');
+    expect(inv.cmd).toBe('cursor-agent');
   });
 });
