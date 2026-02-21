@@ -2,6 +2,7 @@ import type { ToolAdapter, ToolConfig } from '../types.js';
 import { AmpAdapter } from './amp.js';
 import { ClaudeAdapter } from './claude.js';
 import { CodexAdapter } from './codex.js';
+import { CursorAdapter } from './cursor.js';
 import { CustomAdapter } from './custom.js';
 import { GeminiAdapter } from './gemini.js';
 
@@ -10,6 +11,7 @@ const builtInAdapters: Record<string, () => ToolAdapter> = {
   codex: () => new CodexAdapter(),
   gemini: () => new GeminiAdapter(),
   amp: () => new AmpAdapter(),
+  cursor: () => new CursorAdapter(),
 };
 
 export function getAdapter(id: string, config?: ToolConfig): ToolAdapter {
