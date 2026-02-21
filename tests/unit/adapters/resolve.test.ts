@@ -46,6 +46,17 @@ describe('resolveAdapter', () => {
     expect(adapter.id).toBe('claude');
   });
 
+  it('resolves compound cursor ID to CursorAdapter', () => {
+    const config: ToolConfig = {
+      binary: '~/.local/bin/agent',
+      adapter: 'cursor',
+      readOnly: { level: 'enforced' },
+    };
+
+    const adapter = resolveAdapter('cursor-opus-4.6', config);
+    expect(adapter.id).toBe('cursor');
+  });
+
   it('returns CustomAdapter for unknown adapter', () => {
     const config: ToolConfig = {
       binary: '/usr/local/bin/my-tool',
