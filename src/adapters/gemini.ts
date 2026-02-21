@@ -9,14 +9,9 @@ export class GeminiAdapter extends BaseAdapter {
   readOnly = { level: 'enforced' as const }; 
   models = [
     {
-      id: 'gemini-3-pro',
-      name: 'Gemini 3 Pro — latest',
-      recommended: true,
-      extraFlags: ['-m', 'gemini-3-pro-preview'],
-    },
-    {
       id: 'gemini-3.1-pro',
-      name: 'Gemini 3.1 Pro',
+      name: 'Gemini 3.1 Pro — latest',
+      recommended: true,
       extraFlags: ['-m', 'gemini-3.1-pro-preview'],
     },
     {
