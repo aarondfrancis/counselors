@@ -4,7 +4,7 @@ By [Aaron Francis](https://aaronfrancis.com), creator of [Faster.dev](https://fa
 
 Fan out prompts to multiple AI coding agents in parallel.
 
-`counselors` dispatches the same prompt to Claude, Codex, Gemini, Amp, or custom tools simultaneously, collects their responses, and writes everything to a structured output directory.
+`counselors` dispatches the same prompt to Claude, Codex, Gemini, Amp, Cursor CLI, or custom tools simultaneously, collects their responses, and writes everything to a structured output directory.
 
 No MCP servers, no direct API integrations, no complex configuration. It just calls your locally installed CLI tools.
 
@@ -91,6 +91,7 @@ counselors run -t claude,codex "Review src/api/ for security issues and missing 
 | OpenAI Codex | `codex` | enforced | [github](https://github.com/openai/codex) |
 | Gemini CLI | `gemini` | enforced | [github](https://github.com/google-gemini/gemini-cli) |
 | Amp CLI | `amp` | enforced | [ampcode.com](https://ampcode.com) |
+| Cursor CLI | `cursor-agent` | enforced | [cursor.com/cli](https://cursor.com/cli) |
 | Custom | user-defined | configurable | — |
 
 ## Commands
