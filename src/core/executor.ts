@@ -16,6 +16,7 @@ import { debug } from '../ui/logger.js';
 
 const MAX_OUTPUT_BYTES = 10 * 1024 * 1024; // 10MB
 const WINDOWS_TASKKILL_TIMEOUT_MS = 1500;
+const SIGINT_EXIT_DELAY_MS = 2000;
 
 const activeChildren = new Set<ChildProcess>();
 
@@ -59,13 +60,61 @@ function killProcessGroup(child: ChildProcess, signal: NodeJS.Signals): void {
 }
 
 let sigintExitTimer: ReturnType<typeof setTimeout> | null = null;
+let sigintKillTimer: ReturnType<typeof setTimeout> | null = null;
+let sigintCount = 0;
+
+function terminateActiveChildren(signal: NodeJS.Signals): void {
+  for (const child of activeChildren) {
+    killProcessGroup(child, signal);
+  }
+}
+
+function scheduleSigintEscalation(): void {
+  if (sigintKillTimer) return;
+  sigintKillTimer = setTimeout(() => {
+    sigintKillTimer = null;
+    terminateActiveChildren('SIGKILL');
+  }, KILL_GRACE_PERIOD);
+  sigintKillTimer.unref();
+}
+
+function scheduleSigintExit(): void {
+  if (sigintExitTimer) clearTimeout(sigintExitTimer);
+  sigintExitTimer = setTimeout(() => {
+    terminateActiveChildren('SIGKILL');
+    process.exit(1);
+  }, SIGINT_EXIT_DELAY_MS);
+}
 
 process.on('SIGINT', () => {
-  for (const child of activeChildren) {
-    killProcessGroup(child, 'SIGTERM');
+  sigintCount++;
+  if (sigintCount > 1) {
+    terminateActiveChildren('SIGKILL');
+    process.exit(1);
+    return;
   }
-  // Give children a moment to exit, then force-exit
-  sigintExitTimer = setTimeout(() => process.exit(1), 2000);
+
+  terminateActiveChildren('SIGTERM');
+  scheduleSigintEscalation();
+  // Give children a moment to exit, then force-exit.
+  // Loop mode can clear this timer to finish writing manifests.
+  scheduleSigintExit();
+});
+
+process.on('SIGTERM', () => {
+  terminateActiveChildren('SIGTERM');
+  scheduleSigintEscalation();
+  scheduleSigintExit();
+});
+
+process.on('SIGHUP', () => {
+  terminateActiveChildren('SIGTERM');
+  scheduleSigintEscalation();
+  scheduleSigintExit();
+});
+
+process.on('exit', () => {
+  terminateActiveChildren('SIGKILL');
 });
 
 /** Clear the scheduled auto-exit so the loop can finish writing manifests. */
@@ -282,6 +331,9 @@ export function execute(
       processExited = true;
       clearTimeout(timer);
       if (killTimer) clearTimeout(killTimer);
+      // If the primary child exits but leaves descendants alive in the same
+      // process group (common with some CLIs), terminate the group now.
+      killProcessGroup(child, 'SIGKILL');
       activeChildren.delete(child);
       resolve({
         exitCode: code ?? 1,

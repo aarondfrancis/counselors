@@ -599,4 +599,48 @@ setInterval(() => {}, 1000);
       rmSync(markerPath, { force: true });
     }
   });
+
+  it('does not leave grandchildren running after normal child exit', async () => {
+    if (process.platform === 'win32') return;
+
+    const markerPath = join(
+      tmpdir(),
+      `counselors-normal-orphan-${process.pid}-${Date.now()}.txt`,
+    );
+
+    const grandchildScript = `
+const fs = require('node:fs');
+setTimeout(() => {
+  fs.writeFileSync(${JSON.stringify(markerPath)}, 'orphan');
+  process.exit(0);
+}, 1200);
+setInterval(() => {}, 1000);
+`;
+
+    const parentScript = `
+const { spawn } = require('node:child_process');
+spawn(process.execPath, ['-e', ${JSON.stringify(grandchildScript)}], {
+  stdio: 'ignore',
+});
+process.exit(0);
+`;
+
+    try {
+      const result = await execute(
+        {
+          cmd: 'node',
+          args: ['-e', parentScript],
+          cwd: process.cwd(),
+        },
+        5_000,
+      );
+
+      expect(result.exitCode).toBe(0);
+
+      await new Promise((resolve) => setTimeout(resolve, 1_800));
+      expect(existsSync(markerPath)).toBe(false);
+    } finally {
+      rmSync(markerPath, { force: true });
+    }
+  });
 });
