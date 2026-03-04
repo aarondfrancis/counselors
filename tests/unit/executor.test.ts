@@ -449,6 +449,33 @@ describe('execute', () => {
     }
   });
 
+  it('passes custom base URL env vars through to child processes', async () => {
+    process.env.OPENAI_BASE_URL = 'https://custom.openai.example.com/v1';
+    process.env.ANTHROPIC_BASE_URL = 'https://custom.anthropic.example.com';
+    process.env.GOOGLE_GEMINI_BASE_URL = 'https://custom.gemini.example.com';
+    try {
+      const result = await execute(
+        {
+          cmd: 'node',
+          args: [
+            '-e',
+            'process.stdout.write([process.env.OPENAI_BASE_URL, process.env.ANTHROPIC_BASE_URL, process.env.GOOGLE_GEMINI_BASE_URL].join(","))',
+          ],
+          cwd: process.cwd(),
+        },
+        5000,
+      );
+
+      expect(result.stdout).toBe(
+        'https://custom.openai.example.com/v1,https://custom.anthropic.example.com,https://custom.gemini.example.com',
+      );
+    } finally {
+      delete process.env.OPENAI_BASE_URL;
+      delete process.env.ANTHROPIC_BASE_URL;
+      delete process.env.GOOGLE_GEMINI_BASE_URL;
+    }
+  });
+
   it('passes NVM_BIN through to child processes', async () => {
     process.env.NVM_BIN = '/fake/nvm/bin';
     try {
