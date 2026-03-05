@@ -256,6 +256,51 @@ describe('AgentReporter rounds', () => {
   });
 });
 
+describe('AgentReporter round delay', () => {
+  it('prints delay message with round label and duration', async () => {
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, 3);
+    stderrOutput = '';
+
+    r.roundDelayStarted(2, 30_000);
+    expect(stderrOutput).toContain('Round 2/3: starting after 30s');
+    expect(stderrOutput).toContain('Ctrl+C to stop');
+    r.executionFinished();
+  });
+
+  it('uses Math.ceil so sub-second values never show 0s', async () => {
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, 3);
+    stderrOutput = '';
+
+    r.roundDelayStarted(2, 500);
+    expect(stderrOutput).toContain('1s');
+    expect(stderrOutput).not.toContain('0s');
+    r.executionFinished();
+  });
+
+  it('renders round label without total when totalRounds is null', async () => {
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, null);
+    stderrOutput = '';
+
+    r.roundDelayStarted(2, 10_000);
+    expect(stderrOutput).toContain('Round 2: starting after');
+    expect(stderrOutput).not.toContain('Round 2/');
+    r.executionFinished();
+  });
+
+  it('roundDelayEnded does not throw', async () => {
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    expect(() => r.roundDelayEnded()).not.toThrow();
+    r.executionFinished();
+  });
+});
+
 describe('AgentReporter heartbeat', () => {
   afterEach(() => {
     vi.clearAllTimers();

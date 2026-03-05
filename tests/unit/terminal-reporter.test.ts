@@ -258,6 +258,75 @@ describe('TerminalReporter rounds', () => {
   });
 });
 
+describe('TerminalReporter round delay', () => {
+  it('renders countdown line during delay', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, 3);
+    r.toolStarted('claude');
+    r.toolCompleted('claude', makeReport({ toolId: 'claude' }));
+
+    r.roundDelayStarted(2, 30_000);
+    vi.advanceTimersByTime(200);
+    expect(stderrOutput).toContain('Round 2/3: starting after');
+    expect(stderrOutput).toContain('Ctrl+C to stop');
+    r.roundDelayEnded();
+    r.executionFinished();
+  });
+
+  it('clears countdown line after roundDelayEnded', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, 3);
+
+    r.roundDelayStarted(2, 10_000);
+    vi.advanceTimersByTime(200);
+    expect(stderrOutput).toContain('Round 2/3: starting after');
+
+    r.roundDelayEnded();
+    stderrOutput = '';
+    vi.advanceTimersByTime(200);
+    expect(stderrOutput).not.toContain('starting after');
+    r.executionFinished();
+  });
+
+  it('uses Math.ceil so countdown never shows 0s while waiting', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, null);
+
+    r.roundDelayStarted(2, 1500);
+    // At t=0, 1500ms remaining → ceil → 2s
+    expect(stderrOutput).not.toContain('0s');
+
+    vi.advanceTimersByTime(800);
+    // At t=800, 700ms remaining → ceil → 1s
+    stderrOutput = '';
+    vi.advanceTimersByTime(200);
+    expect(stderrOutput).toContain('1s');
+    expect(stderrOutput).not.toContain('0s');
+    r.roundDelayEnded();
+    r.executionFinished();
+  });
+
+  it('renders round label without total when totalRounds is null', async () => {
+    vi.useFakeTimers();
+    const r = await createReporter();
+    r.executionStarted('/tmp/output', ['claude']);
+    r.roundStarted(1, null);
+
+    r.roundDelayStarted(2, 5000);
+    vi.advanceTimersByTime(200);
+    expect(stderrOutput).toContain('Round 2: starting after');
+    expect(stderrOutput).not.toContain('Round 2/');
+    r.roundDelayEnded();
+    r.executionFinished();
+  });
+});
+
 describe('TerminalReporter printSummary', () => {
   it('writes to stdout', async () => {
     const r = await createReporter();

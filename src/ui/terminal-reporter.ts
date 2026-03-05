@@ -282,12 +282,13 @@ export class TerminalReporter implements Reporter {
 
     if (this.delayEndTime != null) {
       const remaining = Math.max(0, this.delayEndTime - Date.now());
+      const remainingSecs = Math.ceil(remaining / 1000);
       const roundLabel =
         this.totalRounds != null
           ? `${this.delayNextRound}/${this.totalRounds}`
           : `${this.delayNextRound}`;
       lines.push(
-        `  Round ${roundLabel}: starting after ${formatDuration(remaining)} (Ctrl+C to stop)`,
+        `  Round ${roundLabel}: starting after ${remainingSecs}s (Ctrl+C to stop)`,
       );
     }
 

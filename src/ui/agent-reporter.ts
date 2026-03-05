@@ -143,12 +143,13 @@ export class AgentReporter implements Reporter {
   }
 
   roundDelayStarted(nextRound: number, delayMs: number): void {
+    const delaySecs = Math.ceil(delayMs / 1000);
     const roundLabel =
       this.totalRounds != null
         ? `${nextRound}/${this.totalRounds}`
         : `${nextRound}`;
     this.stderr(
-      `  Round ${roundLabel}: starting after ${formatDuration(delayMs)} (Ctrl+C to stop)`,
+      `  Round ${roundLabel}: starting after ${delaySecs}s (Ctrl+C to stop)`,
     );
   }
 
