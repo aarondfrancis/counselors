@@ -122,6 +122,8 @@ const reporter = {
   roundStarted: vi.fn(),
   roundCompleted: vi.fn(),
   convergenceDetected: vi.fn(),
+  roundDelayStarted: vi.fn(),
+  roundDelayEnded: vi.fn(),
   printSummary: vi.fn(),
 };
 

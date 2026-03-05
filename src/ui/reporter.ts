@@ -24,6 +24,8 @@ export interface Reporter {
   roundStarted(round: number, totalRounds: number | null): void;
   roundCompleted(round: number): void;
   convergenceDetected(round: number, ratio: number, threshold: number): void;
+  roundDelayStarted(nextRound: number, delayMs: number): void;
+  roundDelayEnded(): void;
 
   // ── Final output (stdout) ──
   printSummary(manifest: RunManifest, opts: { json?: boolean }): void;
@@ -42,6 +44,8 @@ export class NullReporter implements Reporter {
   roundStarted(): void {}
   roundCompleted(): void {}
   convergenceDetected(): void {}
+  roundDelayStarted(): void {}
+  roundDelayEnded(): void {}
   printSummary(): void {}
 }
 

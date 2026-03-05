@@ -14,8 +14,10 @@ const RESET = '\x1b[0m';
 
 function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
   if (minutes > 0) return `${minutes}m ${secs}s`;
   return `${secs}s`;
 }
@@ -51,6 +53,8 @@ export class TerminalReporter implements Reporter {
   private executionActive = false;
   private executionStart = 0;
   private durationMs: number | undefined;
+  private delayEndTime: number | undefined;
+  private delayNextRound: number | undefined;
   private phaseSpinner: ReturnType<typeof setInterval> | null = null;
   private phaseFrame = 0;
   private phaseText = '';
@@ -166,6 +170,16 @@ export class TerminalReporter implements Reporter {
     // No-op — toolCompleted already updated state; render loop shows it
   }
 
+  roundDelayStarted(nextRound: number, delayMs: number): void {
+    this.delayEndTime = Date.now() + delayMs;
+    this.delayNextRound = nextRound;
+  }
+
+  roundDelayEnded(): void {
+    this.delayEndTime = undefined;
+    this.delayNextRound = undefined;
+  }
+
   convergenceDetected(round: number, ratio: number, threshold: number): void {
     this.clearStatus();
     this.stderr(
@@ -266,6 +280,13 @@ export class TerminalReporter implements Reporter {
       }
     }
 
+    if (this.delayEndTime != null) {
+      const remaining = Math.max(0, this.delayEndTime - Date.now());
+      lines.push(
+        `  \u23f3 Starting round ${this.delayNextRound} after ${formatDuration(remaining)} (Ctrl+C to stop)`,
+      );
+    }
+
     // Move cursor up to overwrite previous output
     if (this.lineCount > 0) {
       process.stderr.write(`\x1b[${this.lineCount}A`);
@@ -273,6 +294,15 @@ export class TerminalReporter implements Reporter {
 
     for (const line of lines) {
       process.stderr.write(`\x1b[K${line}\n`);
+    }
+
+    // Clear stale lines if line count decreased
+    const staleCount = this.lineCount - lines.length;
+    if (staleCount > 0) {
+      for (let i = 0; i < staleCount; i++) {
+        process.stderr.write('\x1b[K\n');
+      }
+      process.stderr.write(`\x1b[${staleCount}A`);
     }
 
     this.lineCount = lines.length;

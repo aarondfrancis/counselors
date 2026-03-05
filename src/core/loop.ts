@@ -1,7 +1,7 @@
 import { mkdirSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Config, ReadOnlyLevel, RoundManifest } from '../types.js';
-import { warn } from '../ui/logger.js';
 import type { ProgressEvent } from './dispatcher.js';
 import { dispatch } from './dispatcher.js';
 import { clearSigintExit } from './executor.js';
@@ -25,6 +25,8 @@ export interface LoopOptions {
   onRoundStart?: (round: number) => void;
   onRoundComplete?: (round: number, manifest: RoundManifest) => void;
   onConvergence?: (round: number, ratio: number) => void;
+  onRoundDelay?: (nextRound: number, delayMs: number) => void;
+  onRoundDelayEnd?: () => void;
   onProgress?: (event: ProgressEvent) => void;
 }
 
@@ -38,19 +40,6 @@ const MAX_PRIOR_REPORT_REFS = 8;
 /** Sum word counts across all tool reports in a round. */
 function totalWordCount(round: RoundManifest): number {
   return round.tools.reduce((sum, r) => sum + r.wordCount, 0);
-}
-
-/** Returns an awaitable promise with a `.cancel()` method to resolve it early. */
-function cancellableDelay(ms: number): Promise<void> & { cancel: () => void } {
-  let cancel!: () => void;
-  const promise = new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, ms);
-    cancel = () => {
-      clearTimeout(timer);
-      resolve();
-    };
-  });
-  return Object.assign(promise, { cancel });
 }
 
 /**
@@ -71,6 +60,8 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
     onRoundStart,
     onRoundComplete,
     onConvergence,
+    onRoundDelay,
+    onRoundDelayEnd,
     onProgress,
   } = options;
 
@@ -79,7 +70,7 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
   let outcome: LoopResult['outcome'] = 'completed';
   let aborted = false;
 
-  let delayCancel: (() => void) | null = null;
+  let delayAbort: AbortController | null = null;
 
   // SIGINT: let the current round finish, then stop the loop.
   // Second SIGINT falls through to the executor's handler which force-exits.
@@ -91,9 +82,7 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
       outcome = 'aborted';
       // Suppress the executor's auto-exit so we can write manifests
       clearSigintExit();
-      if (delayCancel) {
-        delayCancel();
-      }
+      delayAbort?.abort();
     }
     // Second SIGINT: re-register original behavior (process will exit via executor handler)
   };
@@ -201,13 +190,13 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
         }
 
         const actualDelay = Math.min(roundDelayMs, remaining);
-        warn(
-          `Waiting ${Math.ceil(actualDelay / 1000)}s before round ${round + 1}... (Ctrl+C to stop)`,
+        onRoundDelay?.(round + 1, actualDelay);
+        delayAbort = new AbortController();
+        await delay(actualDelay, undefined, { signal: delayAbort.signal }).catch(
+          () => {},
         );
-        const delay = cancellableDelay(actualDelay);
-        delayCancel = delay.cancel;
-        await delay;
-        delayCancel = null;
+        delayAbort = null;
+        onRoundDelayEnd?.();
       }
     }
   } finally {

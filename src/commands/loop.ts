@@ -447,6 +447,12 @@ export function registerLoopCommand(program: Command): void {
             if (event.event === 'completed')
               reporter.toolCompleted(event.toolId, event.report!);
           },
+          onRoundDelay: (nextRound, delayMs) => {
+            reporter.roundDelayStarted(nextRound, delayMs);
+          },
+          onRoundDelayEnd: () => {
+            reporter.roundDelayEnded();
+          },
           onConvergence: (round, ratio) => {
             reporter.convergenceDetected(round, ratio, convergenceThreshold);
           },

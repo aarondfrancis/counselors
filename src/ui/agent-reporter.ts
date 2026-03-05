@@ -6,8 +6,10 @@ const HEARTBEAT_INTERVAL = 60_000;
 
 function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
   if (minutes > 0) return `${minutes}m ${secs}s`;
   return `${secs}s`;
 }
@@ -137,6 +139,14 @@ export class AgentReporter implements Reporter {
   roundCompleted(_round: number): void {
     // No-op for agent — tool completion messages already printed
   }
+
+  roundDelayStarted(nextRound: number, delayMs: number): void {
+    this.stderr(
+      `  \u23f3 Starting round ${nextRound} after ${formatDuration(delayMs)} (Ctrl+C to stop)`,
+    );
+  }
+
+  roundDelayEnded(): void {}
 
   convergenceDetected(round: number, ratio: number, threshold: number): void {
     this.stderr(
