@@ -1,5 +1,6 @@
 import { mkdirSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { Config, ReadOnlyLevel, RoundManifest } from '../types.js';
 import type { ProgressEvent } from './dispatcher.js';
 import { dispatch } from './dispatcher.js';
@@ -19,9 +20,13 @@ export interface LoopOptions {
   durationMs?: number;
   /** Word count ratio threshold for early stop (default: 0.3). */
   convergenceThreshold?: number;
+  /** Delay between rounds in milliseconds (default: 0). */
+  roundDelayMs?: number;
   onRoundStart?: (round: number) => void;
   onRoundComplete?: (round: number, manifest: RoundManifest) => void;
   onConvergence?: (round: number, ratio: number) => void;
+  onRoundDelay?: (nextRound: number, delayMs: number) => void;
+  onRoundDelayEnd?: () => void;
   onProgress?: (event: ProgressEvent) => void;
 }
 
@@ -51,9 +56,12 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
     rounds: maxRounds,
     durationMs,
     convergenceThreshold = 0.3,
+    roundDelayMs = 0,
     onRoundStart,
     onRoundComplete,
     onConvergence,
+    onRoundDelay,
+    onRoundDelayEnd,
     onProgress,
   } = options;
 
@@ -61,6 +69,8 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
   const completedRounds: RoundManifest[] = [];
   let outcome: LoopResult['outcome'] = 'completed';
   let aborted = false;
+
+  let delayAbort: AbortController | null = null;
 
   // SIGINT: let the current round finish, then stop the loop.
   // Second SIGINT falls through to the executor's handler which force-exits.
@@ -72,6 +82,7 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
       outcome = 'aborted';
       // Suppress the executor's auto-exit so we can write manifests
       clearSigintExit();
+      delayAbort?.abort();
     }
     // Second SIGINT: re-register original behavior (process will exit via executor handler)
   };
@@ -166,6 +177,26 @@ export async function runLoop(options: LoopOptions): Promise<LoopResult> {
             break;
           }
         }
+      }
+
+      if (roundDelayMs > 0 && round < maxRounds && !aborted) {
+        const remaining =
+          durationMs != null
+            ? durationMs - (Date.now() - startTime)
+            : Infinity;
+        if (remaining <= 0) {
+          outcome = 'aborted';
+          break;
+        }
+
+        const actualDelay = Math.min(roundDelayMs, remaining);
+        onRoundDelay?.(round + 1, actualDelay);
+        delayAbort = new AbortController();
+        await delay(actualDelay, undefined, { signal: delayAbort.signal }).catch(
+          () => {},
+        );
+        delayAbort = null;
+        onRoundDelayEnd?.();
       }
     }
   } finally {

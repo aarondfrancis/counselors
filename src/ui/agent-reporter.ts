@@ -6,8 +6,10 @@ const HEARTBEAT_INTERVAL = 60_000;
 
 function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
   if (minutes > 0) return `${minutes}m ${secs}s`;
   return `${secs}s`;
 }
@@ -29,6 +31,7 @@ export class AgentReporter implements Reporter {
   private heartbeatStart = 0;
   private executionStart = 0;
   private durationMs: number | undefined;
+  private totalRounds: number | null = null;
 
   // ── Preset phases ──
 
@@ -115,6 +118,7 @@ export class AgentReporter implements Reporter {
   // ── Round management ──
 
   roundStarted(round: number, totalRounds: number | null): void {
+    this.totalRounds = totalRounds;
     if (round > 1) {
       const elapsed = Date.now() - this.executionStart;
       let timing = `${formatDuration(elapsed)} elapsed`;
@@ -137,6 +141,19 @@ export class AgentReporter implements Reporter {
   roundCompleted(_round: number): void {
     // No-op for agent — tool completion messages already printed
   }
+
+  roundDelayStarted(nextRound: number, delayMs: number): void {
+    const delaySecs = Math.ceil(delayMs / 1000);
+    const roundLabel =
+      this.totalRounds != null
+        ? `${nextRound}/${this.totalRounds}`
+        : `${nextRound}`;
+    this.stderr(
+      `  Round ${roundLabel}: starting after ${delaySecs}s (Ctrl+C to stop)`,
+    );
+  }
+
+  roundDelayEnded(): void {}
 
   convergenceDetected(round: number, ratio: number, threshold: number): void {
     this.stderr(

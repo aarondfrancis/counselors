@@ -11,7 +11,7 @@ import { synthesizeFinal } from '../core/synthesis.js';
 import { getPresetNames, resolvePreset } from '../presets/index.js';
 import type { PresetDefinition } from '../presets/types.js';
 import type { RunManifest } from '../types.js';
-import { error, info } from '../ui/logger.js';
+import { error, info, warn } from '../ui/logger.js';
 import { formatDryRun } from '../ui/output.js';
 import { createReporter } from '../ui/reporter.js';
 import {
@@ -69,6 +69,7 @@ export function registerLoopCommand(program: Command): void {
       'Word count ratio for early stop',
       '0.3',
     )
+    .option('--round-delay <time>', 'Delay between rounds (e.g. "30s", "5m")')
     .option('--dry-run', 'Show what would be dispatched without running')
     .option('--json', 'Output manifest as JSON')
     .option('-o, --output-dir <dir>', 'Base output directory');
@@ -89,6 +90,7 @@ export function registerLoopCommand(program: Command): void {
         discoveryTool?: string;
         inlineEnhancement?: boolean;
         convergenceThreshold?: string;
+        roundDelay?: string;
         dryRun?: boolean;
         json?: boolean;
         outputDir?: string;
@@ -160,6 +162,28 @@ export function registerLoopCommand(program: Command): void {
         error('--convergence-threshold must be a number between 0 and 1.');
         process.exitCode = 1;
         return;
+      }
+
+      // Parse round delay
+      let roundDelayMs: number | undefined;
+      if (opts.roundDelay) {
+        try {
+          roundDelayMs = parseDurationMs(opts.roundDelay);
+          // Warn about bare numeric values (interpreted as days)
+          if (/^\d+(\.\d+)?$/.test(opts.roundDelay)) {
+            warn(
+              `--round-delay ${opts.roundDelay} interpreted as ${opts.roundDelay} days. Did you mean ${opts.roundDelay}s (seconds) or ${opts.roundDelay}m (minutes)?`,
+            );
+          }
+        } catch (e) {
+          error(
+            e instanceof Error
+              ? e.message
+              : `Invalid --round-delay value "${opts.roundDelay}".`,
+          );
+          process.exitCode = 1;
+          return;
+        }
       }
 
       // Resolve preset
@@ -378,6 +402,9 @@ export function registerLoopCommand(program: Command): void {
           info(`  Preset: ${preset.name}`);
         }
         info(`  Convergence threshold: ${convergenceThreshold}`);
+        if (roundDelayMs) {
+          info(`  Round delay: ${opts.roundDelay}`);
+        }
         return;
       }
 
@@ -410,6 +437,7 @@ export function registerLoopCommand(program: Command): void {
           rounds,
           durationMs,
           convergenceThreshold,
+          roundDelayMs,
           onRoundStart: (round) => {
             reporter.roundStarted(round, totalRoundsLabel);
           },
@@ -418,6 +446,12 @@ export function registerLoopCommand(program: Command): void {
               reporter.toolStarted(event.toolId, event.pid);
             if (event.event === 'completed')
               reporter.toolCompleted(event.toolId, event.report!);
+          },
+          onRoundDelay: (nextRound, delayMs) => {
+            reporter.roundDelayStarted(nextRound, delayMs);
+          },
+          onRoundDelayEnd: () => {
+            reporter.roundDelayEnded();
           },
           onConvergence: (round, ratio) => {
             reporter.convergenceDetected(round, ratio, convergenceThreshold);
