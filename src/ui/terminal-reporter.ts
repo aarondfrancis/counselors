@@ -140,13 +140,11 @@ export class TerminalReporter implements Reporter {
   // ── Round management ──
 
   roundStarted(round: number, totalRounds: number | null): void {
-    this.currentRound = round;
     this.totalRounds = totalRounds;
 
     // On rounds after the first, commit the previous round's final table
     // and show timing info
     if (round > 1) {
-      // Flush current render so it stays on screen
       this.render();
       this.lineCount = 0;
 
@@ -159,6 +157,8 @@ export class TerminalReporter implements Reporter {
       timing += ` \u00b7 Ctrl+C to stop`;
       this.stderr(`  ${DIM}${timing}${RESET}`);
     }
+
+    this.currentRound = round;
 
     // Reset tool states for the new round
     for (const [id] of this.tools) {
