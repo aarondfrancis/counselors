@@ -250,7 +250,16 @@ export class TerminalReporter implements Reporter {
 
   private render(): void {
     const lines: string[] = [];
-    if (this.currentRound != null) {
+    if (this.delayEndTime != null) {
+      const remaining = Math.max(0, this.delayEndTime - Date.now());
+      const roundLabel =
+        this.totalRounds != null
+          ? `${this.delayNextRound}/${this.totalRounds}`
+          : `${this.delayNextRound}`;
+      lines.push(
+        `  Round ${roundLabel}: starting after ${formatDuration(remaining)} (Ctrl+C to stop)`,
+      );
+    } else if (this.currentRound != null) {
       const roundLabel =
         this.totalRounds != null
           ? `${this.currentRound}/${this.totalRounds}`
@@ -278,13 +287,6 @@ export class TerminalReporter implements Reporter {
       ) {
         lines.push(`    ${RED}\u2514 see ${tool.report.stderrFile}${RESET}`);
       }
-    }
-
-    if (this.delayEndTime != null) {
-      const remaining = Math.max(0, this.delayEndTime - Date.now());
-      lines.push(
-        `  \u23f3 Starting round ${this.delayNextRound} after ${formatDuration(remaining)} (Ctrl+C to stop)`,
-      );
     }
 
     // Move cursor up to overwrite previous output

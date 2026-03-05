@@ -31,6 +31,7 @@ export class AgentReporter implements Reporter {
   private heartbeatStart = 0;
   private executionStart = 0;
   private durationMs: number | undefined;
+  private totalRounds: number | null = null;
 
   // ── Preset phases ──
 
@@ -117,6 +118,7 @@ export class AgentReporter implements Reporter {
   // ── Round management ──
 
   roundStarted(round: number, totalRounds: number | null): void {
+    this.totalRounds = totalRounds;
     if (round > 1) {
       const elapsed = Date.now() - this.executionStart;
       let timing = `${formatDuration(elapsed)} elapsed`;
@@ -141,8 +143,12 @@ export class AgentReporter implements Reporter {
   }
 
   roundDelayStarted(nextRound: number, delayMs: number): void {
+    const roundLabel =
+      this.totalRounds != null
+        ? `${nextRound}/${this.totalRounds}`
+        : `${nextRound}`;
     this.stderr(
-      `  \u23f3 Starting round ${nextRound} after ${formatDuration(delayMs)} (Ctrl+C to stop)`,
+      `  Round ${roundLabel}: starting after ${formatDuration(delayMs)} (Ctrl+C to stop)`,
     );
   }
 
