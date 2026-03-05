@@ -173,6 +173,7 @@ Using \`-f\` skips the discovery/prompt-writing phases and sends the prompt as-i
 - \`--rounds <N>\` — number of rounds (default: 3)
 - \`--duration <time>\` — max wall time (e.g. \`30m\`, \`1h\`); when set without explicit \`--rounds\`, rounds are unlimited
 - \`--convergence-threshold <ratio>\` — early stop when output word count drops below this ratio of the previous round (default: 0.3)
+- \`--round-delay <time>\` — delay between rounds (e.g. \`30s\`, \`5m\`, useful for rate limiting)
 
 ### Mode C: \`loop\` + inline prompt (iterative, no preset, auto-enhanced)
 
@@ -212,6 +213,7 @@ In rounds 2+, counselors automatically augments the prompt with \`@file\` refere
 | \`--rounds <N>\` | Number of rounds (default: 3) |
 | \`--duration <time>\` | Max wall time (\`30m\`, \`1h\`); unlimited rounds when set alone |
 | \`--convergence-threshold <ratio>\` | Early stop ratio (default: 0.3) |
+| \`--round-delay <time>\` | Delay between rounds (\`30s\`, \`5m\`) |
 | \`--discovery-tool <id>\` | Agent for prep phases (default: first tool) |
 | \`--no-inline-enhancement\` | Skip discovery/prompt-writing for inline prompts |
 

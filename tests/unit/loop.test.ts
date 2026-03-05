@@ -228,4 +228,35 @@ describe('runLoop', () => {
       expect(result.outcome).toBe('completed');
     });
   });
+
+  describe('round delay', () => {
+    it('delays between rounds but not after the last', async () => {
+      const startTime = Date.now();
+      const result = await runLoop(
+        baseOptions({ rounds: 3, roundDelayMs: 50 }),
+      );
+      const elapsed = Date.now() - startTime;
+
+      expect(result.rounds).toHaveLength(3);
+      expect(result.outcome).toBe('completed');
+      // 2 inter-round delays × 50ms; upper bound proves no extra delay after last round
+      expect(elapsed).toBeGreaterThanOrEqual(80);
+      expect(elapsed).toBeLessThan(200);
+    });
+
+    it('bounds delay by remaining duration', async () => {
+      const startTime = Date.now();
+      // Mock dispatch is ~instant. After round 1, remaining ≈ 100ms.
+      // Delay = min(5000, ~100) ≈ 100ms. Then duration expires before round 2.
+      const result = await runLoop(
+        baseOptions({ rounds: 5, durationMs: 100, roundDelayMs: 5000 }),
+      );
+      const elapsed = Date.now() - startTime;
+
+      expect(result.rounds).toHaveLength(1);
+      expect(result.outcome).toBe('aborted');
+      // Bounded to ~100ms, not 5s
+      expect(elapsed).toBeLessThan(300);
+    });
+  });
 });

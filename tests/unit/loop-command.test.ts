@@ -14,6 +14,7 @@ const mockSynthesizeFinal = vi.fn();
 const mockSafeWriteFile = vi.fn();
 const mockCreateReporter = vi.fn();
 const mockInfo = vi.fn();
+const mockWarn = vi.fn();
 const mockError = vi.fn();
 
 vi.mock('../../src/commands/_run-shared.js', () => ({
@@ -53,6 +54,7 @@ vi.mock('../../src/ui/reporter.js', () => ({
 
 vi.mock('../../src/ui/logger.js', () => ({
   info: (...args: unknown[]) => mockInfo(...args),
+  warn: (...args: unknown[]) => mockWarn(...args),
   error: (...args: unknown[]) => mockError(...args),
 }));
 
@@ -244,5 +246,39 @@ describe('loop command prompt preparation', () => {
     const promptUsed = mockCreateOutputDir.mock.calls[0]?.[2] as string;
     expect(promptUsed).toContain('inline base');
     expect(promptUsed).toContain('## General Guidelines');
+  });
+});
+
+describe('loop command round-delay option', () => {
+  function setupHarness() {
+    const harness = createProgramHarness();
+    registerLoopCommand(harness.program as any);
+    mockResolvePrompt.mockResolvedValue({
+      promptContent: 'test prompt',
+      promptSource: 'file',
+      slug: 'test-slug',
+    });
+    return harness;
+  }
+
+  it('parses round-delay and passes roundDelayMs to runLoop', async () => {
+    const harness = setupHarness();
+    await harness.run(undefined, { file: 'prompt.md', roundDelay: '30s' });
+    expect(mockRunLoop.mock.calls[0]?.[0].roundDelayMs).toBe(30000);
+  });
+
+  it('errors on invalid round-delay format', async () => {
+    const harness = setupHarness();
+    await harness.run(undefined, { file: 'prompt.md', roundDelay: 'invalid' });
+    expect(process.exitCode).toBe(1);
+    expect(mockError).toHaveBeenCalledWith(
+      expect.stringContaining('Invalid duration'),
+    );
+  });
+
+  it('warns when bare numeric value is passed (interpreted as days)', async () => {
+    const harness = setupHarness();
+    await harness.run(undefined, { file: 'prompt.md', roundDelay: '5' });
+    expect(mockWarn).toHaveBeenCalledWith(expect.stringContaining('5 days'));
   });
 });
