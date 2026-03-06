@@ -6,13 +6,13 @@ export class GeminiAdapter extends BaseAdapter {
   displayName = 'Gemini CLI';
   commands = ['gemini'];
   installUrl = 'https://github.com/google-gemini/gemini-cli';
-  readOnly = { level: 'enforced' as const };
+  readOnly = { level: 'enforced' as const }; 
   models = [
     {
-      id: 'gemini-3-pro',
-      name: 'Gemini 3 Pro — latest',
+      id: 'gemini-3.1-pro',
+      name: 'Gemini 3.1 Pro — latest',
       recommended: true,
-      extraFlags: ['-m', 'gemini-3-pro-preview'],
+      extraFlags: ['-m', 'gemini-3.1-pro-preview'],
     },
     {
       id: 'gemini-2.5-pro',
