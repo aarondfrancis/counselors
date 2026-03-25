@@ -30,6 +30,7 @@
     "@biomejs/biome": "2.3.14",
     "@types/cross-spawn": "^6.0.6",
     "@types/node": "^22.0.0",
+    "fast-check": "^4.6.0",
     "tsup": "^8.0.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"

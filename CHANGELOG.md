@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Kiro CLI adapter (`kiro-cli`) — built-in support for Kiro CLI with model catalog (auto, Claude Opus/Sonnet/Haiku, DeepSeek, MiniMax, Qwen), stdin prompt delivery, and `--trust-tools` read-only enforcement
+
 ### Changed
 - Standalone release binaries are now built into `release/` instead of `dist/`, decoupling binary artifacts from npm package contents
 - Homebrew formula updates now target platform-specific GitHub release binaries directly (macOS/Linux, arm64/x64) instead of the npm tarball
