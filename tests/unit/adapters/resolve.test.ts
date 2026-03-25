@@ -36,6 +36,16 @@ describe('resolveAdapter', () => {
     expect(adapter.id).toBe('gemini');
   });
 
+  it('resolves compound kiro-cli ID to KiroCliAdapter', () => {
+    const config: ToolConfig = {
+      binary: '/usr/local/bin/kiro-cli',
+      adapter: 'kiro-cli',
+      readOnly: { level: 'enforced' },
+    };
+    const adapter = resolveAdapter('kiro-cli-claude-opus-4.6', config);
+    expect(adapter.id).toBe('kiro-cli');
+  });
+
   it('resolves plain built-in ID without adapter field', () => {
     const config: ToolConfig = {
       binary: '/usr/local/bin/claude',

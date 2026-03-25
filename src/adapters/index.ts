@@ -4,12 +4,14 @@ import { ClaudeAdapter } from './claude.js';
 import { CodexAdapter } from './codex.js';
 import { CustomAdapter } from './custom.js';
 import { GeminiAdapter } from './gemini.js';
+import { KiroCliAdapter } from './kiro-cli.js';
 
 const builtInAdapters: Record<string, () => ToolAdapter> = {
   claude: () => new ClaudeAdapter(),
   codex: () => new CodexAdapter(),
   gemini: () => new GeminiAdapter(),
   amp: () => new AmpAdapter(),
+  'kiro-cli': () => new KiroCliAdapter(),
 };
 
 export function getAdapter(id: string, config?: ToolConfig): ToolAdapter {
