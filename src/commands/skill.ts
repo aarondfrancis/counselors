@@ -87,7 +87,7 @@ Print the output and have them pick a preset.
 
 4. **MANDATORY: Confirm the selection before continuing.** After the user picks agents, echo back the exact list you will dispatch to:
 
-   > Dispatching to: **claude-opus**, **codex-5.3-high**, **opencode-openai-gpt-5.4**
+   > Dispatching to: **claude-opus**, **codex-5.3-high**, **gemini-pro**
 
    Then ask the user to confirm (e.g. "Look good?") before proceeding to Phase 4. This prevents silent tool omissions. If the user corrects the list, update your selection accordingly.
 
@@ -157,7 +157,7 @@ counselors run -f <promptFilePath> --tools [comma-separated-tool-ids] --json
 \`\`\`
 
 Examples:
-- \`--tools claude,codex,gemini,opencode\`
+- \`--tools claude,codex,gemini\`
 - \`--group smart\` (uses the configured group)
 - \`--group smart --tools codex\` (group plus explicit tools)
 
