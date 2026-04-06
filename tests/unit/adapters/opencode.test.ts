@@ -24,7 +24,7 @@ describe('OpenCodeAdapter', () => {
     expect(adapter.models).toHaveLength(3);
     expect(adapter.models[0]).toMatchObject({
       id: 'openai/gpt-5.4',
-      compoundId: 'opencode-gpt-5.4',
+      compoundId: 'opencode-openai-gpt-5.4',
       recommended: true,
     });
   });

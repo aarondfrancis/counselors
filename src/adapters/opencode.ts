@@ -31,20 +31,20 @@ export class OpenCodeAdapter extends BaseAdapter {
   models = [
     {
       id: 'openai/gpt-5.4',
-      compoundId: 'opencode-gpt-5.4',
+      compoundId: 'opencode-openai-gpt-5.4',
       name: 'GPT-5.4 via OpenCode - most capable',
       recommended: true,
       extraFlags: ['--model', 'openai/gpt-5.4'],
     },
     {
       id: 'openai/gpt-5.4-mini',
-      compoundId: 'opencode-gpt-5.4-mini',
+      compoundId: 'opencode-openai-gpt-5.4-mini',
       name: 'GPT-5.4 Mini via OpenCode - faster',
       extraFlags: ['--model', 'openai/gpt-5.4-mini'],
     },
     {
       id: 'openai/gpt-5.3-codex',
-      compoundId: 'opencode-gpt-5.3-codex',
+      compoundId: 'opencode-openai-gpt-5.3-codex',
       name: 'GPT-5.3 Codex via OpenCode - coding focused',
       extraFlags: ['--model', 'openai/gpt-5.3-codex'],
     },

@@ -53,7 +53,7 @@ describe('resolveAdapter', () => {
       readOnly: { level: 'enforced' },
     };
 
-    const adapter = resolveAdapter('opencode-gpt-5.4', config);
+    const adapter = resolveAdapter('opencode-openai-gpt-5.4', config);
     expect(adapter.id).toBe('opencode');
   });
 
