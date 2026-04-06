@@ -6,7 +6,12 @@ const READ_ONLY_PERMISSIONS = JSON.stringify({
   '*': 'deny',
   bash: 'deny',
   edit: 'deny',
-  read: 'allow',
+  read: {
+    '*': 'allow',
+    '*.env': 'deny',
+    '*.env.*': 'deny',
+    '*.env.example': 'allow',
+  },
   glob: 'allow',
   grep: 'allow',
   list: 'allow',

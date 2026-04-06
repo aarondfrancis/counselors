@@ -63,7 +63,10 @@ describe('OpenCodeAdapter', () => {
     expect(inv.env?.OPENCODE_PERMISSION).toBeDefined();
     expect(inv.env?.OPENCODE_PERMISSION).toContain('"edit":"deny"');
     expect(inv.env?.OPENCODE_PERMISSION).toContain('"bash":"deny"');
-    expect(inv.env?.OPENCODE_PERMISSION).toContain('"read":"allow"');
+    expect(inv.env?.OPENCODE_PERMISSION).toContain('"read":{"*":"allow"');
+    expect(inv.env?.OPENCODE_PERMISSION).toContain('"*.env":"deny"');
+    expect(inv.env?.OPENCODE_PERMISSION).toContain('"*.env.*":"deny"');
+    expect(inv.env?.OPENCODE_PERMISSION).toContain('"*.env.example":"allow"');
   });
 
   it('omits permission env when policy is none', () => {
