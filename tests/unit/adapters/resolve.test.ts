@@ -46,6 +46,17 @@ describe('resolveAdapter', () => {
     expect(adapter.id).toBe('claude');
   });
 
+  it('resolves opencode adapter IDs', () => {
+    const config: ToolConfig = {
+      binary: '/usr/local/bin/opencode',
+      adapter: 'opencode',
+      readOnly: { level: 'enforced' },
+    };
+
+    const adapter = resolveAdapter('opencode-gpt-5.4', config);
+    expect(adapter.id).toBe('opencode');
+  });
+
   it('returns CustomAdapter for unknown adapter', () => {
     const config: ToolConfig = {
       binary: '/usr/local/bin/my-tool',

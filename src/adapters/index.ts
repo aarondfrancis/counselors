@@ -4,12 +4,14 @@ import { ClaudeAdapter } from './claude.js';
 import { CodexAdapter } from './codex.js';
 import { CustomAdapter } from './custom.js';
 import { GeminiAdapter } from './gemini.js';
+import { OpenCodeAdapter } from './opencode.js';
 
 const builtInAdapters: Record<string, () => ToolAdapter> = {
   claude: () => new ClaudeAdapter(),
   codex: () => new CodexAdapter(),
   gemini: () => new GeminiAdapter(),
   amp: () => new AmpAdapter(),
+  opencode: () => new OpenCodeAdapter(),
 };
 
 export function getAdapter(id: string, config?: ToolConfig): ToolAdapter {
