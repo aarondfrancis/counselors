@@ -339,7 +339,7 @@ async function collectCustomConfig(
 export function registerAddCommand(program: Command): void {
   program
     .command('add [tool]')
-    .description('Add a tool (claude, codex, gemini, amp, or custom)')
+    .description('Add a tool (claude, codex, gemini, amp, opencode, or custom)')
     .action(async (toolId?: string) => {
       const config = loadConfig();
 
