@@ -22,7 +22,7 @@ on:
 
 permissions:
   contents: write   # tag + GitHub release
-  id-token: write   # npm provenance (optional, future-proofing)
+  id-token: write   # npm Trusted Publishing (OIDC)
 
 jobs:
   check:
@@ -81,7 +81,8 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
+          # NOTE: Do NOT set registry-url here — it injects NODE_AUTH_TOKEN
+          # from GITHUB_TOKEN, which overrides npm's OIDC Trusted Publishing.
           cache: npm
 
       - name: Install dependencies
@@ -90,11 +91,16 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Uses npm Trusted Publishing via OIDC — no long-lived token needed.
-      # Requires one-time setup at https://www.npmjs.com/package/@skinnyandbald/counselors/access
-      # (add GitHub Actions as a trusted publisher for this repo + workflow filename).
-      - name: Publish to npm (with provenance + OIDC)
+      # npm Trusted Publishing — OIDC handles auth, no long-lived token needed.
+      # Configured at https://www.npmjs.com/package/@skinnyandbald/counselors/access
+      - name: Ensure npm >= 11.5.1 (required for OIDC publishing)
+        run: npm install -g npm@latest
+
+      - name: Publish to npm (Trusted Publishing)
         run: npm publish --access public --provenance
+        env:
+          # Unset any NODE_AUTH_TOKEN to ensure OIDC is used, not a stale token
+          NODE_AUTH_TOKEN: ''
 
       - name: Configure git for tag push
         run: |
