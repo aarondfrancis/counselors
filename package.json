@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "prepare": "tsup",
+    "prepare": "npx --yes tsup",
     "build:binaries": "bun run scripts/build-binaries.ts",
     "dev": "tsup --watch",
     "test": "vitest run",
