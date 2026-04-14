@@ -35,8 +35,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "style: auto-fix formatting [skip ci]"
-          git push
+          if git diff --cached --quiet; then
+            echo "No formatting changes to commit."
+            exit 0
+          fi
+          git commit -m "style: auto-fix formatting [skip ci]"
+          if ! git push; then
+            echo "::warning::Push to main rejected (likely branch protection). Run 'npx biome check --write' locally and open a PR."
+            exit 0
+          fi
 
   test:
     runs-on: ${{ matrix.os }}
