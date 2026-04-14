@@ -40,10 +40,21 @@ jobs:
             exit 0
           fi
           git commit -m "style: auto-fix formatting [skip ci]"
-          if ! git push; then
-            echo "::warning::Push to main rejected (likely branch protection). Run 'npx biome check --write' locally and open a PR."
+          set +e
+          push_output=$(git push 2>&1)
+          push_exit=$?
+          set -e
+          echo "$push_output"
+          if [ $push_exit -eq 0 ]; then
             exit 0
           fi
+          # Only soft-pass on branch-protection rejections. Fail loudly on auth/network/other errors.
+          if echo "$push_output" | grep -qE "GH013|protected branch|Changes must be made through a pull request"; then
+            echo "::warning::Push to main rejected by branch protection. Run 'npx biome check --write' locally and open a PR."
+            exit 0
+          fi
+          echo "::error::git push failed for reasons unrelated to branch protection (see output above)."
+          exit $push_exit
 
   test:
     runs-on: ${{ matrix.os }}
