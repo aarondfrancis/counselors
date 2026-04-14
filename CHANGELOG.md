@@ -17,6 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Homebrew checksum resolution now retries when fetching freshly uploaded release asset checksums, reducing transient CDN propagation failures
 - Generated Homebrew formula install logic now validates binary discovery in the staging directory before install, with clearer failure behavior
 
+## [0.7.7] - 2026-04-14
+
+### Added
+- `openrouter-agent` now accepts `--max-tokens <n>` flag (default 32000, overridable via `OPENROUTER_AGENT_MAX_TOKENS` env var). Replaces the previously hardcoded 16384 ceiling.
+- `openrouter-agent` now accepts `--reasoning-effort <low|medium|high>` flag, forwarded to OpenRouter's `reasoning.effort` parameter for models that support it (e.g., GPT-5.4).
+- Auto-release workflow (`.github/workflows/release-npm.yml`) using npm Trusted Publishing — detects `package.json` version changes on `main`, publishes with provenance via OIDC, pushes the matching git tag, and creates a GitHub release. No long-lived tokens.
+
+### Fixed
+- `openrouter-agent` now exits 1 with diagnostic stderr (`finish_reason`, `completion_tokens`, `reasoning_tokens`, hint on hitting `max_tokens`) when a response returns null or whitespace-only content. Previously silently emitted the literal string `"None"` or empty content and exited 0, making failed calls indistinguishable from successful empty responses in fan-outs.
+- `openrouter-agent` now surfaces top-level `error` fields in HTTP-200 OpenRouter responses (common when an upstream provider returns a structured error). Previously ignored.
+- `--max-tokens` validation uses `Number.isSafeInteger` to reject floats, NaN, and Infinity — OpenRouter's API expects an integer and previously returned HTTP 400 "JSON parsing failed" for fractional inputs.
+
 ## [0.5.2] - 2026-02-27
 
 ### Added

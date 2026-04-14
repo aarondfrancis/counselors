@@ -1,6 +1,6 @@
 {
   "name": "@skinnyandbald/counselors",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Fan out prompts to multiple AI coding agents in parallel",
   "type": "module",
   "bin": {
