@@ -102,7 +102,8 @@ jobs:
 
       - name: Verify dist/cli.js exists
         shell: bash
-        run: test -f dist/cli.js || (echo "FAIL: dist/cli.js not built" && exit 1)
+        run: |
+          test -f dist/cli.js || { echo "FAIL - dist/cli.js not built"; exit 1; }
 
       - name: Verify binary runs
         shell: bash
