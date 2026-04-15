@@ -82,10 +82,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 22
+          node-version: 24  # ships with npm 11.x (required for OIDC Trusted Publishing)
           # NOTE: Do NOT set registry-url here — it injects NODE_AUTH_TOKEN
           # from GITHUB_TOKEN, which overrides npm's OIDC Trusted Publishing.
           cache: npm
+
+      - name: Verify npm supports OIDC publishing
+        run: |
+          echo "node $(node --version), npm $(npm --version)"
+          npm_major=$(npm --version | cut -d. -f1)
+          if [ "$npm_major" -lt 11 ]; then
+            echo "::error::npm >= 11.5.1 required for OIDC Trusted Publishing"
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci
@@ -95,11 +104,6 @@ jobs:
 
       # npm Trusted Publishing — OIDC handles auth, no long-lived token needed.
       # Configured at https://www.npmjs.com/package/@skinnyandbald/counselors/access
-      - name: Ensure npm >= 11.5.1 (required for OIDC publishing)
-        run: |
-          npm install -g npm@11.12.1
-          npm --version
-
       - name: Publish to npm (Trusted Publishing)
         run: npm publish --access public --provenance
         env:
