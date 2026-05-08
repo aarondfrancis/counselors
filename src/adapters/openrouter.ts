@@ -48,9 +48,15 @@ export class OpenRouterAdapter extends BaseAdapter {
       extraFlags: ['--model', 'google/gemini-3.1-pro-preview'],
     },
     {
-      id: 'codex-5.4',
-      name: 'Codex 5.4 / GPT-5.4 — latest reasoning model (OpenAI)',
+      id: 'gpt-5.5',
+      name: 'GPT-5.5 — latest flagship model (OpenAI)',
       recommended: true,
+      compoundId: 'or-gpt-5.5',
+      extraFlags: ['--model', 'openai/gpt-5.5'],
+    },
+    {
+      id: 'codex-5.4',
+      name: 'Codex 5.4 / GPT-5.4 — reasoning model (OpenAI)',
       compoundId: 'or-codex-5.4',
       extraFlags: ['--model', 'openai/gpt-5.4'],
     },
