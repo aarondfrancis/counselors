@@ -11,9 +11,21 @@ export class ClaudeAdapter extends BaseAdapter {
   modelFlag = '--model';
   models = [
     {
+      id: 'fable',
+      compoundId: 'claude-fable-high',
+      name: 'Fable 5 — most capable, high effort',
+      recommended: true,
+      extraFlags: ['--model', 'fable', '--effort', 'high'],
+    },
+    {
+      id: 'fable',
+      compoundId: 'claude-fable',
+      name: 'Fable 5 — most capable, default effort',
+      extraFlags: ['--model', 'fable'],
+    },
+    {
       id: 'opus',
       name: 'Opus 4.6 — most capable',
-      recommended: true,
       extraFlags: ['--model', 'opus'],
     },
     {
