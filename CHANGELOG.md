@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New GPT-5.6 Codex model presets (`codex-sol-high`/`-xhigh`/`-medium`, `codex-terra`, `codex-luna`), with Sol-high now the recommended default ahead of the existing gpt-5.3-codex presets
+
 ### Changed
 - Standalone release binaries are now built into `release/` instead of `dist/`, decoupling binary artifacts from npm package contents
 - Homebrew formula updates now target platform-specific GitHub release binaries directly (macOS/Linux, arm64/x64) instead of the npm tarball
