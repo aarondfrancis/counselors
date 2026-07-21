@@ -1,4 +1,8 @@
 import type { Command } from 'commander';
+import {
+  ANTIGRAVITY_SETTINGS_FILE,
+  ensureAntigravityReadOnlySettings,
+} from '../adapters/antigravity.js';
 import { getAllBuiltInAdapters, resolveAdapter } from '../adapters/index.js';
 import { AMP_SETTINGS_FILE, CONFIG_DIR } from '../constants.js';
 import { copyAmpSettings } from '../core/amp-utils.js';
@@ -21,7 +25,9 @@ function buildToolConfig(
   return {
     binary: binaryPath,
     readOnly: { level: adapter.readOnly.level },
-    ...(id === 'gemini' || id === 'codex' ? { timeout: 900 } : {}),
+    ...(id === 'gemini' || id === 'codex' || id === 'antigravity'
+      ? { timeout: 900 }
+      : {}),
   };
 }
 
@@ -97,6 +103,9 @@ export function registerInitCommand(program: Command): void {
 
         if (configured.some((t) => t.adapter === 'amp')) {
           copyAmpSettings();
+        }
+        if (configured.some((t) => t.adapter === 'antigravity')) {
+          ensureAntigravityReadOnlySettings();
         }
 
         saveConfig(config);
@@ -187,6 +196,10 @@ export function registerInitCommand(program: Command): void {
       if (selectedIds.includes('amp')) {
         copyAmpSettings();
         success(`Copied amp settings to ${AMP_SETTINGS_FILE}`);
+      }
+      if (selectedIds.includes('antigravity')) {
+        ensureAntigravityReadOnlySettings();
+        success(`Granted read_file(*) in ${ANTIGRAVITY_SETTINGS_FILE}`);
       }
 
       // Step 5: Save config

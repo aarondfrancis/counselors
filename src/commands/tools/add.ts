@@ -2,6 +2,10 @@ import { accessSync, constants } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Command } from 'commander';
 import {
+  ANTIGRAVITY_SETTINGS_FILE,
+  ensureAntigravityReadOnlySettings,
+} from '../../adapters/antigravity.js';
+import {
   getAdapter,
   getAllBuiltInAdapters,
   isBuiltInTool,
@@ -182,10 +186,18 @@ async function addBuiltInTool(
     ...(extraFlags ? { extraFlags } : {}),
   };
 
+  if (toolId === 'antigravity') {
+    // Run before saving: if this fails, nothing should be persisted half-configured.
+    ensureAntigravityReadOnlySettings();
+  }
+
   const updated = addToolToConfig(config, name, toolConfig);
   saveConfig(updated);
   if (toolId === 'amp') {
     copyAmpSettings();
+  }
+  if (toolId === 'antigravity') {
+    success(`Granted read_file(*) in ${ANTIGRAVITY_SETTINGS_FILE}`);
   }
   success(`Added "${name}" to config.`);
 
@@ -339,7 +351,9 @@ async function collectCustomConfig(
 export function registerAddCommand(program: Command): void {
   program
     .command('add [tool]')
-    .description('Add a tool (claude, codex, gemini, amp, or custom)')
+    .description(
+      'Add a tool (claude, codex, gemini, amp, antigravity, or custom)',
+    )
     .action(async (toolId?: string) => {
       const config = loadConfig();
 

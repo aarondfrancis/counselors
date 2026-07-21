@@ -36,6 +36,17 @@ describe('resolveAdapter', () => {
     expect(adapter.id).toBe('gemini');
   });
 
+  it('resolves compound antigravity ID to AntigravityAdapter', () => {
+    const config: ToolConfig = {
+      binary: '/usr/local/bin/agy',
+      adapter: 'antigravity',
+      readOnly: { level: 'enforced' },
+    };
+
+    const adapter = resolveAdapter('antigravity-flash-high', config);
+    expect(adapter.id).toBe('antigravity');
+  });
+
   it('resolves plain built-in ID without adapter field', () => {
     const config: ToolConfig = {
       binary: '/usr/local/bin/claude',

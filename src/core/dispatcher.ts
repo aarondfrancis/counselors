@@ -146,7 +146,12 @@ export async function dispatch(
         outputFile,
         stderrFile,
         cost: cost ?? undefined,
-        error: result.exitCode !== 0 ? result.stderr.slice(0, 500) : undefined,
+        // An adapter's parseResult may know a failure exitCode alone can't
+        // express (e.g. a tool that exits 0 on a permission denial) —
+        // let it supply the message; only fall back to stderr otherwise.
+        error:
+          parsed.error ??
+          (result.exitCode !== 0 ? result.stderr.slice(0, 500) : undefined),
       };
 
       onProgress?.({ toolId: id, event: 'completed', report });

@@ -4,7 +4,7 @@ By [Aaron Francis](https://aaronfrancis.com), creator of [Faster.dev](https://fa
 
 Fan out prompts to multiple AI coding agents in parallel.
 
-`counselors` dispatches the same prompt to Claude, Codex, Gemini, Amp, or custom tools simultaneously, collects their responses, and writes everything to a structured output directory.
+`counselors` dispatches the same prompt to Claude, Codex, Gemini, Antigravity, Amp, or custom tools simultaneously, collects their responses, and writes everything to a structured output directory.
 
 No MCP servers, no direct API integrations, no complex configuration. It just calls your locally installed CLI tools.
 
@@ -90,6 +90,7 @@ counselors run -t claude,codex "Review src/api/ for security issues and missing 
 | Claude Code | `claude` | enforced | [docs](https://docs.anthropic.com/en/docs/claude-code) |
 | OpenAI Codex | `codex` | enforced | [github](https://github.com/openai/codex) |
 | Gemini CLI | `gemini` | enforced | [github](https://github.com/google-gemini/gemini-cli) |
+| Antigravity CLI | `antigravity` | enforced | [docs](https://antigravity.google/docs/cli/install) |
 | Amp CLI | `amp` | enforced | [ampcode.com](https://ampcode.com) |
 | Custom | user-defined | configurable | — |
 
@@ -560,6 +561,7 @@ Requires Node 20+. TypeScript with ESM, built with tsup, tested with vitest, lin
 ## Known issues
 
 - **Amp `deep` model uses Bash to read files.** The `deep` model (GPT-5.2 Codex) reads files via `Bash` rather than the `Read` tool. Because `Bash` is a write-capable tool, we cannot guarantee that deep mode will not modify files. A mandatory read-only instruction is injected into the prompt, but this is a best-effort safeguard. For safety-critical tasks, prefer `amp-smart`.
+- **Antigravity read-only enforcement depends on shared, external state.** Unlike the other adapters, `agy` has no per-invocation flag to grant read-only access — enforcement comes from a `permissions.allow: ["read_file(*)"]` rule in the user's real, shared `~/.gemini/antigravity-cli/settings.json`, the same file their regular interactive Antigravity usage writes to. If that file ever also carries a write-capable rule (from normal interactive use), the adapter detects it and downgrades to `bestEffort` rather than silently claiming `enforced`.
 
 ## License
 

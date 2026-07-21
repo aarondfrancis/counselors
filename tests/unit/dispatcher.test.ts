@@ -309,6 +309,41 @@ describe('dispatch', () => {
     expect(reports[0].error).toBeUndefined();
   });
 
+  it('prefers an adapter-supplied error over the exitCode-based default', async () => {
+    // A tool can exit 0 while its own parseResult still detects a failure
+    // (e.g. antigravity's exit-0-on-permission-denial case) — its error
+    // message must survive the dispatcher-only-fields spread, not just its
+    // status.
+    const { execute } = await import('../../src/core/executor.js');
+    vi.mocked(execute).mockResolvedValueOnce({
+      exitCode: 0,
+      stdout: '',
+      stderr: 'jetski: no output produced — permission denied',
+      timedOut: false,
+      durationMs: 50,
+    });
+
+    const config = makeConfig({
+      antigravity: {
+        binary: '/usr/bin/agy',
+        readOnly: { level: 'enforced' },
+      },
+    });
+
+    const reports = await dispatch({
+      config,
+      toolIds: ['antigravity'],
+      promptFilePath: '/tmp/prompt.md',
+      promptContent: 'test',
+      outputDir: testDir,
+      readOnlyPolicy: 'none',
+      cwd: process.cwd(),
+    });
+
+    expect(reports[0].status).toBe('error');
+    expect(reports[0].error).toContain('read_file');
+  });
+
   it('skips amp-deep under enforced read-only policy', async () => {
     const config = makeConfig({
       'amp-deep': {

@@ -1,5 +1,6 @@
 import type { ToolAdapter, ToolConfig } from '../types.js';
 import { AmpAdapter } from './amp.js';
+import { AntigravityAdapter } from './antigravity.js';
 import { ClaudeAdapter } from './claude.js';
 import { CodexAdapter } from './codex.js';
 import { CustomAdapter } from './custom.js';
@@ -10,6 +11,7 @@ const builtInAdapters: Record<string, () => ToolAdapter> = {
   codex: () => new CodexAdapter(),
   gemini: () => new GeminiAdapter(),
   amp: () => new AmpAdapter(),
+  antigravity: () => new AntigravityAdapter(),
 };
 
 export function getAdapter(id: string, config?: ToolConfig): ToolAdapter {

@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- New `antigravity` adapter for Google's Antigravity CLI (`agy`), the replacement for the standalone Gemini CLI (shut down for individual users on 2026-06-18)
+
 ### Changed
 - Standalone release binaries are now built into `release/` instead of `dist/`, decoupling binary artifacts from npm package contents
 - Homebrew formula updates now target platform-specific GitHub release binaries directly (macOS/Linux, arm64/x64) instead of the npm tarball
 
 ### Fixed
+- An adapter's `parseResult` can now supply its own `error` message (previously always overwritten by the dispatcher's generic exitCode-based one) — needed for tools like Antigravity CLI that exit 0 even on a headless permission denial
 - npm package publish size is dramatically reduced by excluding standalone compiled binaries from the published `files` list
 - Release smoke tests now include Linux (`ubuntu-latest`) for `npm` and `standalone` install paths to catch Linux-only install/runtime breakages
 - Homebrew checksum resolution now retries when fetching freshly uploaded release asset checksums, reducing transient CDN propagation failures
